@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .live-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        overflow: hidden;
+        position: relative;
+      }
+      @media screen and (orientation: landscape) {
+        .live-container {
+          padding-bottom: 0;
+          height: 100vh;
+        }
+      }
+      .live-content {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
+    <script src="./js/pixi.js"></script>
+    <script src="./js/util.js"></script>
+  </head>
+  <body>
+    <div class="live-container">
+      <div class="live-content" id="container"></div>
+    </div>
+    <script>
+      const init = async () => {
+        // 初始化画布
+        const container = document.getElementById("container");
+        const app = new PIXI.Application({
+          antialias: true,
+          resizeTo: container,
+          background: "pink",
+          //   backgroundAlpha: 0,
+        });
+        container.appendChild(app.view);
+
+        //   创建四位玩家容器
+        const container1 = new PIXI.Container();
+        const container2 = new PIXI.Container();
+        const container3 = new PIXI.Container();
+        const container4 = new PIXI.Container();
+
+        const pokers = [
+          { alias: "2", number: "2", src: "../game/image/2-diamond.png" },
+          { alias: "3", number: "2", src: "../game/image/2-spade.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          //   { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          //   { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          //   { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          //   { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          //   { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          //   { alias: "5", number: "5", src: "../game/image/5-club.png" },
+          //   { alias: "5", number: "5", src: "../game/image/5-club.png" },
+        ];
+        const containerOne = new PIXI.Container();
+        const containerTwo = new PIXI.Container();
+        const containerThree = new PIXI.Container();
+        const containerFour = new PIXI.Container();
+        pokers.forEach((item) => {
+          PIXI.Assets.add({ alias: item.alias, src: item.src });
+        });
+        let x = 0;
+        let y = 0;
+        let number = 0;
+        pokers.forEach(async (poker, index) => {
+          const sprite = await PIXI.Assets.load(poker.alias);
+          const spritePicture = new PIXI.Sprite(sprite);
+          spritePicture.x = x;
+          x += 18;
+          spritePicture.scale.set(0.6, 0.6);
+          containerOne.addChild(spritePicture);
+        });
+        containerOne.position.set(
+          app.renderer.width / 2 - (19.2 * pokers.length) / 2,
+          0
+        );
+        app.stage.addChild(containerOne);
+
+        // const Loader = PIXI.Loader.shared;
+        // console.log(PIXI.loader,'xxxxxxxxxxxx')
+        // let count = 0;
+        // // 用作计算资源的加载进度
+        // const loadCount = () => {
+        //   count++;
+        //   console.log(`加载资源图片第${count}张, 时间${Date.now()}`);
+        // };
+        // Preloader([
+        //   ["A", "images/A.png", loadCount],
+        //   ["2", "images/2.png", loadCount],
+        //   ["3", "images/3.png", loadCount],
+        // ])
+        //   .then((data) => {
+        //     console.log(data, "资源加载成功");
+        //   })
+        //   .catch(() => {
+        //     console.log("资源加载失败");
+        //   });
+      };
+
+      init();
+    </script>
+  </body>
+</html>

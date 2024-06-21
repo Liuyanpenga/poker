@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vue3语法模板</title>
+    <script src="./game/js/vue.global.prod.min.js"></script>
+
+    <script src="./game/js/dayjs.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://unpkg.com/ant-design-vue@3.2.20/dist/antd.min.css"
+      media="screen"
+    />
+    <script src="https://unpkg.com/ant-design-vue@3.2.20"></script>
+  </head>
+  <style></style>
+
+  <body>
+    <div style="width: 100%" id="app">
+      <div>{{exp_id}}</div>
+      <div>{{fullNum}}</div>
+      <div v-for="item in dateTime" :key="item">{{item}}</div>
+      <a-button type="primary" @click="upload('更新')">更新</a-button>
+      <a-button type="dashed" @click="sets('恢复')">恢复</a-button>
+      <a-button danger @click="dialog">打开弹框</a-button>
+      <div>
+        <a-select v-model="value" class="m-2" placeholder="Select" size="large">
+          <a-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </a-select>
+      </div>
+      <a-modal
+        v-model:visible="dialogVisible"
+        title="Basic Modal"
+        @ok="handleOk"
+      >
+        <p>Some contents...</p>
+        <p>Some contents...</p>
+        <p>Some contents...</p>
+      </a-modal>
+    </div>
+  </body>
+</html>
+<script>
+  Object.assign(window, Vue);
+  const vue3Composition = {
+    setup() {
+      // 变量部分
+      const data = reactive({
+        exp_id: "虚拟实验id",
+        dateTime: [1, 2, 3, 4, 5],
+        value: "",
+        dialogVisible: false,
+        options: [
+          {
+            value: "Option1",
+            label: "Option1",
+          },
+          {
+            value: "Option2",
+            label: "Option2",
+          },
+        ],
+      });
+      // toRef: 复制 reactive 里的单个属性并转成 ref
+      // toRefs: 复制 reactive 里的所有属性并转成 ref
+      const dataRef = toRefs(data);
+      // 监听
+      watch(dataRef.exp_id, (newName, oldName) => {
+        console.log("新数据", newName);
+        console.log("老数据", oldName);
+      });
+      // 计算属性
+      dataRef.fullNum = computed(() => {
+        return dataRef.value;
+      });
+      // 生命周期 mounted
+      onMounted(() => {
+        console.log(`我是Mounted生命周期`);
+      });
+      // 函数部分
+      const methods = reactive({
+        upload(e) {
+          dataRef.exp_id.value = "修改";
+          dataRef.dateTime.value = [8, 9, 10, 11, 12];
+          //this.dialog() //调用其他方法加this可以调用到
+        },
+        sets(e) {
+          dataRef.exp_id.value = "虚拟实验id";
+          dataRef.dateTime.value = [1, 2, 3, 4, 5];
+        },
+        dialog() {
+          dataRef.dialogVisible.value = true;
+        },
+      });
+      return {
+        ...dataRef,
+        ...methods,
+      };
+    },
+  };
+  const app = createApp(vue3Composition).use(antd).mount("#app"); //初始化
+</script>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>入门示例01</title>
+    <script src="./js/pixi.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // 从全局对象 PIXI 解构出需要的属性
+      const { Application, TextStyle, Text, Graphics } = PIXI;
+      // 创建一个 pixi 实例
+      let app = new Application({
+        width: 256,
+        height: 256,
+      });
+      // 创建一个文本样式对象
+      let style = new TextStyle({
+        fontSize: 24,
+        fill: "#FFF",
+      });
+      // 使用上面的文本样式新建一个文本对象
+      let message = new Text("Hello World", style);
+      message.anchor.set(0.5, 0.5);
+      message.position.set(app.renderer.width / 2, app.renderer.height / 2);
+      app.stage.addChild(message);
+
+      // 矩形绘制 x y 从左上角开始
+      let rectangle = new Graphics();
+      rectangle.lineStyle(4, 0xff3300, 1);
+      rectangle.beginFill(0x66ccff);
+      rectangle.drawRect(0, 0, 64, 64);
+      rectangle.endFill();
+      rectangle.position.set(10, 10);
+      app.stage.addChild(rectangle);
+
+      let circle = new Graphics();
+      circle.beginFill("red");
+      circle.drawCircle(0, 0, 32);
+      circle.endFill();
+      circle.x = 10 + 64 + 10 + 32;
+      circle.y = 10 + 32;
+      app.stage.addChild(circle);
+
+      // 插入到 body 中
+      document.body.appendChild(app.view);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模拟直播</title>
+    <style>
+      .live-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        background-color: pink;
+        overflow: hidden;
+        position: relative;
+      }
+      @media screen and (orientation: landscape) {
+        .live-container {
+          padding-bottom: 0;
+          height: 100vh;
+        }
+      }
+      .live-content {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
+    <script src="../plugin/pixi.js"></script>
+  </head>
+  <body>
+    <div class="live-container">
+      <div class="live-content" id="container"></div>
+    </div>
+    <script type="module">
+      const init = async () => {
+        const container = document.getElementById("container");
+        const app = new PIXI.Application({
+          resizeTo: container,
+          // background: "skyblue",
+        });
+
+        await PIXI.Assets.load("../image/A-heart.png");
+        let sprite = PIXI.Sprite.from("../image/A-heart.png");
+        sprite.position.set(20, 20);
+        app.stage.addChild(sprite);
+        container.appendChild(app.view);
+      };
+      init();
+    </script>
+  </body>
+</html>

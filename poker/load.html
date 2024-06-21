@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pixi 资源加载</title>
+    <script src="https://pixijs.download/v7.3.2/pixi.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      async function init() {
+        // 创建一个 pixi 实例
+        let app = new PIXI.Application({
+          antialias: true, // 消除锯齿
+          width: 414,
+          height: 414,
+        });
+
+        // 插入到 body 中
+        document.body.appendChild(app.view);
+
+        // 使用路径加载图片资源
+        PIXI.Assets.load(["./images/sprite.png"], function (progress) {
+          // 获取加载进度
+          console.log(progress);
+        }).then((res) => {
+          let texture = PIXI.Assets.get("./images/sprite.png"); // 等价于 PIXI.utils.TextureCache["./images/sprite.png"];
+          let sprite = new PIXI.Sprite(texture);
+          sprite.x = 10;
+          sprite.y = 10;
+          app.stage.addChild(sprite);
+        });
+
+        // PIXI 中对于一个资源，可以拥有多个别名，但是资源加载只会触发一次
+        PIXI.Assets.add({
+          alias: ["test", "demo"],
+          src: "./images/sprite.png",
+        });
+        let test = await PIXI.Assets.load("test");
+        let demo = await PIXI.Assets.load("demo");
+
+        // PIXI.Assets.add({alias:'picture',src:'./images/sprite.{png,webp}'})
+        // 等价上面  如果WebP格式的图片可用，将尝试加载WebP
+        PIXI.Assets.add({
+          alias: "picture",
+          src: ["./images/sprite.png", "./images/sprite.webp"],
+        });
+        let picture = await PIXI.Assets.load("picture");
+        let spritePicture = new PIXI.Sprite(picture);
+        spritePicture.position.set(212, 10);
+        app.stage.addChild(spritePicture);
+
+        // 使用一个纹理绘制不同的精灵时，需要先调用纹理的 clone 方法，复制一个新的纹理出来，否则创建精灵的纹理会相互影响！
+        let texturePicture = PIXI.Assets.get("picture").clone();
+        let rectangle1 = new PIXI.Rectangle(96, 64, 32, 32);
+        texturePicture.frame = rectangle1;
+
+        let sprite4 = new PIXI.Sprite(texturePicture);
+        sprite4.x = 10 * 2 + 192;
+        sprite4.y = 10 * 2 + 192;
+        app.stage.addChild(sprite4);
+
+        // 错误捕捉
+        try {
+          PIXI.Assets.add({ alias: "sprite3", src: "./images/sprite2.png" });
+          PIXI.Assets.add({ alias: "sprite4", src: "./images/sprite.png" });
+          await PIXI.Assets.load(["sprite3", "sprite4"], function (progress) {
+            // sprite4 加载失败， progress 永远到不了 1
+            console.log(progress);
+          });
+        } catch (error) {
+          console.error(error);
+          // alert('网络异常，文件加载失败了');
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>

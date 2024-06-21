@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>控制台</title>
+    <script src="../plugin/vue.global.prod.min.js"></script>
+
+    <script src="../plugin/dayjs.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../css/antd.min.css"
+      media="screen"
+    />
+    <script src="../plugin/antd.min.js"></script>
+    <script src="../plugin/jquery.min.js"></script>
+    <script src="../js/service.js"></script>
+    <style scoped>
+      .container {
+        width: 100%;
+        height: 100vh;
+        padding: 10px 20px;
+        border: 3px solid #7bb155;
+      }
+      .player {
+        width: 100px;
+        color: #ffffff;
+        border-radius: 3px;
+        cursor: pointer;
+        margin: 0 10px 10px 0;
+      }
+      .btn_color1 {
+        background: #62d0c7;
+        border: 1px solid #62d0c7;
+      }
+      .btn_color2 {
+        background: #ec7e8b;
+        border: 1px solid #ec7e8b;
+      }
+      .btn_color3 {
+        background: #6b8ed5;
+        border: 1px solid #6b8ed5;
+      }
+      .over {
+        background: #c81d31;
+        border: 1px solid #c81d31;
+      }
+      .sendCard,
+      .outCard,
+      .firstSend,
+      .setRank {
+        background: #dddddd;
+        pointer-events: none;
+        cursor: not-allowed;
+      }
+      .no-hover-animation .ant-btn:hover {
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="app">
+      <header>
+        <h2 style="font-weight: 600">控制台</h2>
+      </header>
+      <section>
+        <div>
+          <h3 style="font-weight: 600">设置玩家信息</h3>
+          <a-button @click="visible1 = true" class="player btn_color1">
+            {{player1}}
+          </a-button>
+          <a-button @click="visible2 = true" class="player btn_color2">
+            {{player2}}
+          </a-button>
+          <a-button @click="visible3 = true" class="player btn_color1">
+            {{player3}}
+          </a-button>
+          <a-button @click="visible4 = true" class="player btn_color2">
+            {{player4}}
+          </a-button>
+        </div>
+        <div>
+          <h3 style="font-weight: 600">设置玩家等级</h3>
+          <a-form
+            :model="playerLevel"
+            name="basic"
+            layout="inline"
+            autocomplete="off"
+          >
+            <a-form-item :label="`${player1}和${player3}等级`" name="level1">
+              <a-input-number
+                v-model:value="playerLevel.level1"
+                style="width: 100px"
+              />
+            </a-form-item>
+            <a-form-item :label="`${player2}和${player4}等级`" name="level2">
+              <a-input-number
+                v-model:value="playerLevel.level2"
+                style="width: 100px"
+              />
+            </a-form-item>
+            <a-form-item>
+              <a-button
+                class="player btn_color3"
+                style="width: 120px"
+                @click="setInfo"
+              >
+                设置玩家信息
+              </a-button>
+            </a-form-item>
+          </a-form>
+        </div>
+        <div>
+          <h3 style="font-weight: 600">发牌</h3>
+          <a-button :disabled="isSendCard" class="player btn_color3">
+            开始发牌
+          </a-button>
+          <a-button :disabled="isSendCard" class="player over">
+            结束发牌
+          </a-button>
+        </div>
+        <div>
+          <h3 style="font-weight: 600">进贡、还贡、抗贡</h3>
+          <a-button :disabled="isOutCard" class="player btn_color2">
+            结束进贡
+          </a-button>
+          <a-button :disabled="isOutCard" class="player btn_color1">
+            抗贡
+          </a-button>
+        </div>
+        <div>
+          <h3 style="font-weight: 600">设置谁先出牌</h3>
+          <a-radio-group v-model:value="firstPlayer" :disabled="isFirstSend">
+            <a-radio :value="1">
+              <a-button
+                :disabled="isFirstSend"
+                @click="firstPlayer = 1"
+                class="player btn_color1"
+              >
+                {{player1}}
+              </a-button>
+            </a-radio>
+            <a-radio :value="2">
+              <a-button
+                :disabled="isFirstSend"
+                @click="firstPlayer = 2"
+                class="player btn_color2"
+              >
+                {{player2}}
+              </a-button>
+            </a-radio>
+            <a-radio :value="3">
+              <a-button
+                :disabled="isFirstSend"
+                @click="firstPlayer = 3"
+                class="player btn_color1"
+              >
+                {{player3}}
+              </a-button>
+            </a-radio>
+            <a-radio :value="4">
+              <a-button
+                :disabled="isFirstSend"
+                @click="firstPlayer = 4"
+                class="player btn_color2"
+              >
+                {{player4}}
+              </a-button>
+            </a-radio>
+          </a-radio-group>
+          <a-button :disabled="isFirstSend" class="player btn_color3">
+            开始出牌
+          </a-button>
+        </div>
+        <div>
+          <h3 style="font-weight: 600">设置排名</h3>
+          <a-row justify="start">
+            <a-col :span="3.8">
+              <a-button :disabled="isSetRank" class="player btn_color1">
+                头游
+              </a-button>
+              <a-select
+                :disabled="isSetRank"
+                v-model:value="ranking.playerRanking1"
+                style="width: 100px; margin-right: 10px"
+                :options="players"
+              />
+            </a-col>
+            <a-col :span="3.8">
+              <a-button :disabled="isSetRank" class="player btn_color2">
+                二游
+              </a-button>
+              <a-select
+                :disabled="isSetRank"
+                v-model:value="ranking.playerRanking2"
+                style="width: 100px; margin-right: 10px"
+                :options="players"
+              />
+            </a-col>
+            <a-col :span="3.8">
+              <a-button :disabled="isSetRank" class="player btn_color1">
+                三游
+              </a-button>
+              <a-select
+                :disabled="isSetRank"
+                v-model:value="ranking.playerRanking3"
+                style="width: 100px; margin-right: 10px"
+                :options="players"
+              />
+            </a-col>
+            <a-col :span="3.8">
+              <a-button :disabled="isSetRank" class="player btn_color3">
+                本局结算
+              </a-button>
+            </a-col>
+          </a-row>
+        </div>
+        <div>
+          <a-button class="player btn_color1" style="width: 120px">
+            开始新的一局
+          </a-button>
+          <a-button class="player btn_color2" style="width: 120px">
+            开始新的一轮
+          </a-button>
+        </div>
+        <a-modal
+          v-model:visible="visible1"
+          :mask-closable="false"
+          title="玩家一信息设置"
+        >
+          <a-form
+            :model="playerInfo"
+            name="basic"
+            :label-col="{ span: 6 }"
+            :wrapper-col="{ span: 14 }"
+            autocomplete="off"
+          >
+            <a-form-item
+              label="名字"
+              name="username1"
+              :rules="[{ required: true, message: '请输入玩家姓名!' }]"
+            >
+              <a-input v-model:value="playerInfo.username1" />
+            </a-form-item>
+            <a-form-item
+              label="按钮IP"
+              name="IP1"
+              :rules="[{ required: true, message: '请输入按钮IP!' }]"
+            >
+              <a-input v-model:value="playerInfo.IP1" />
+            </a-form-item>
+          </a-form>
+          <template #footer>
+            <a-button
+              key="submit"
+              type="primary"
+              @click="confirmInfo(1,playerInfo.username1,playerInfo.IP1)"
+              >确认</a-button
+            >
+          </template>
+        </a-modal>
+        <a-modal
+          v-model:visible="visible2"
+          :mask-closable="false"
+          title="玩家二信息设置"
+        >
+          <a-form
+            :model="playerInfo"
+            name="basic"
+            :label-col="{ span: 6 }"
+            :wrapper-col="{ span: 14 }"
+            autocomplete="off"
+          >
+            <a-form-item
+              label="名字"
+              name="username2"
+              :rules="[{ required: true, message: '请输入玩家姓名!' }]"
+            >
+              <a-input v-model:value="playerInfo.username2" />
+            </a-form-item>
+            <a-form-item
+              label="按钮IP"
+              name="IP2"
+              :rules="[{ required: true, message: '请输入按钮IP!' }]"
+            >
+              <a-input v-model:value="playerInfo.IP2" />
+            </a-form-item>
+          </a-form>
+          <template #footer>
+            <a-button
+              key="submit"
+              type="primary"
+              @click="confirmInfo(2,playerInfo.username2,playerInfo.IP2)"
+            >
+              确认
+            </a-button>
+          </template>
+        </a-modal>
+        <a-modal
+          v-model:visible="visible3"
+          :mask-closable="false"
+          title="玩家三信息设置"
+        >
+          <a-form
+            :model="playerInfo"
+            name="basic"
+            :label-col="{ span: 6 }"
+            :wrapper-col="{ span: 14 }"
+            autocomplete="off"
+          >
+            <a-form-item
+              label="名字"
+              name="username3"
+              :rules="[{ required: true, message: '请输入玩家姓名!' }]"
+            >
+              <a-input v-model:value="playerInfo.username3" />
+            </a-form-item>
+            <a-form-item
+              label="按钮IP"
+              name="IP3"
+              :rules="[{ required: true, message: '请输入按钮IP!' }]"
+            >
+              <a-input v-model:value="playerInfo.IP3" />
+            </a-form-item>
+          </a-form>
+          <template #footer>
+            <a-button
+              key="submit"
+              type="primary"
+              @click="confirmInfo(3,playerInfo.username3,playerInfo.IP3)"
+            >
+              确认
+            </a-button>
+          </template>
+        </a-modal>
+        <a-modal
+          v-model:visible="visible4"
+          :mask-closable="false"
+          title="玩家四信息设置"
+        >
+          <a-form
+            :model="playerInfo"
+            name="basic"
+            :label-col="{ span: 6 }"
+            :wrapper-col="{ span: 14 }"
+            autocomplete="off"
+          >
+            <a-form-item
+              label="名字"
+              name="username4"
+              :rules="[{ required: true, message: '请输入玩家姓名!' }]"
+            >
+              <a-input v-model:value="playerInfo.username4" />
+            </a-form-item>
+            <a-form-item
+              label="按钮IP"
+              name="IP4"
+              :rules="[{ required: true, message: '请输入按钮IP!' }]"
+            >
+              <a-input v-model:value="playerInfo.IP4" />
+            </a-form-item>
+          </a-form>
+          <template #footer>
+            <a-button
+              key="submit"
+              type="primary"
+              @click="confirmInfo(4,playerInfo.username4,playerInfo.IP4)"
+            >
+              确认
+            </a-button>
+          </template>
+        </a-modal>
+      </section>
+    </div>
+  </body>
+</html>
+
+<script>
+  Object.assign(window, Vue);
+  const vueComposition = {
+    setup() {
+      const data = reactive({
+        player1: "1.玩家",
+        player2: "2.玩家",
+        player3: "3.玩家",
+        player4: "4.玩家",
+        isSendCard: false,
+        isOutCard: false,
+        isFirstSend: false,
+        isSetRank: false,
+        visible1: false,
+        visible2: false,
+        visible3: false,
+        visible4: false,
+        playerInfo: {
+          username1: "",
+          IP1: "",
+          username2: "",
+          IP2: "",
+          username3: "",
+          IP3: "",
+          username4: "",
+          IP4: "",
+        },
+        playerLevel: {
+          level1: 2,
+          level2: 2,
+        },
+        firstPlayer: null,
+        ranking: {
+          playerRanking1: "",
+          playerRanking2: "",
+          playerRanking3: "",
+          playerRanking4: "",
+        },
+        players: [],
+        addGrade: {
+          grade1: "",
+          grade2: "",
+        },
+      });
+      const dataRef = toRefs(data);
+      onMounted(() => {
+        initWebSocket()
+      })
+      const methods = reactive({
+        // 修改页面显示玩家姓名
+        confirmInfo(player, username, IP) {
+          if (!username) {
+            antd.message.warning("请填写玩家姓名。");
+            return;
+          } else if (!IP) {
+            antd.message.warning("请填写按钮IP。");
+            return;
+          }
+
+          if (player === 1) {
+            dataRef.player1.value = username;
+            dataRef.visible1.value = false;
+            // dataRef.players.value.push({value:1,label:username})
+          } else if (player === 2) {
+            dataRef.player2.value = username;
+            dataRef.visible2.value = false;
+          } else if (player === 3) {
+            dataRef.player3.value = username;
+            dataRef.visible3.value = false;
+          } else if (player === 4) {
+            dataRef.player4.value = username;
+            dataRef.visible4.value = false;
+          }
+        },
+        // 设置玩家信息校验
+        setInfo() {
+          for (let key in dataRef.playerInfo.value) {
+            if (!dataRef.playerInfo.value[key]) {
+              if (key.includes("1")) {
+                antd.message.warning("请检查完善1.玩家信息");
+              } else if (key.includes("2")) {
+                antd.message.warning("请检查完善2.玩家信息");
+              } else if (key.includes("3")) {
+                antd.message.warning("请检查完善3.玩家信息");
+              } else if (key.includes("4")) {
+                antd.message.warning("请检查完善4.玩家信息");
+              }
+              return;
+              //   dataRef.isSendCard.value = false;
+            }
+          }
+        },
+      });
+      return {
+        ...dataRef,
+        ...methods,
+      };
+    },
+  };
+  const app = createApp(vueComposition).use(antd).mount("#app");
+</script>

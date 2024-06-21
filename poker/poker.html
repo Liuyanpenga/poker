@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="./js/pixi.js"></script>
+    <script src="/game/js/util.js"></script>
+    <style>
+      .live-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        overflow: hidden;
+        position: relative;
+      }
+      @media screen and (orientation: landscape) {
+        .live-container {
+          padding-bottom: 0;
+          height: 100vh;
+        }
+      }
+      .live-content {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="live-container">
+      <div class="live-content" id="container"></div>
+    </div>
+    <script>
+      const init = async () => {
+        const { Application, Container, Graphics, Assets, Sprite } = PIXI;
+        const container = document.getElementById('container');
+        const app = new PIXI.Application({
+          // width: 600,
+          // height: 300,
+          background: "pink",
+          resizeTo: container,
+        });
+        document.body.appendChild(app.view);
+        const pokers = [
+          { alias: "方块2", number: "2", src: "/game/image/2-diamond.png" },
+          { alias: "黑桃2", number: "2", src: "/game/image/2-spade.png" },
+          { alias: "梅花3", number: "3", src: "/game/image/3-club.png" },
+          { alias: "黑桃3", number: "3", src: "/game/image/3-spade.png" },
+          { alias: "梅花5", number: "5", src: "/game/image/5-club.png" },
+          { alias: "梅花A", number: "15", src: "/game/image/A-club.png" },
+          { alias: "方块A", number: "15", src: "/game/image/A-diamond.png" },
+          { alias: "红桃A", number: "15", src: "/game/image/A-heart.png" },
+          { alias: "黑桃A", number: "15", src: "/game/image/A-spade.png" },
+          { alias: "大王", number: "1", src: "/game/image/red-joker.png" },
+          { alias: "大王", number: "1", src: "/game/image/red-joker.png" },
+          { alias: "方块2", number: "2", src: "/game/image/2-diamond.png" },
+          { alias: "黑桃2", number: "2", src: "/game/image/2-spade.png" },
+          { alias: "梅花3", number: "3", src: "/game/image/3-club.png" },
+          { alias: "黑桃3", number: "3", src: "/game/image/3-spade.png" },
+        ];
+        const containerOne = new PIXI.Container();
+        const containerTwo = new PIXI.Container();
+        const containerThree = new PIXI.Container();
+        const containerFour = new PIXI.Container();
+
+   
+
+        pokers.forEach((item,index) => {
+          item.number = index + 1
+          PIXI.Assets.add({ alias: item.alias, src: item.src });
+        });
+     // 将数值相同的牌分组
+     const groupedPokers = {};
+        for (const poker of pokers) {
+          if (!groupedPokers[poker.number]) {
+            groupedPokers[poker.number] = [];
+          }
+          groupedPokers[poker.number].push(poker);
+        }
+        const areaOne = new PIXI.Graphics();
+        areaOne.beginFill("skyblue");
+        areaOne.drawRect(0, 0, 200, 64);
+        areaOne.endFill();
+        containerOne.addChild(areaOne);
+        containerOne.position.set(
+          app.renderer.width / 2 - areaOne.width / 2,
+          0
+        );
+
+        const cardWidth = 19.2;
+        const cardHeight = 21.8;
+        const cardSpacing = 0;
+        let currentX1 = 0;
+        let currentY1 = 0;
+        for (const value in groupedPokers) {
+          // 排序(红桃丶黑桃丶梅花丶方块)
+          sortSuit(groupedPokers[value]);
+
+          // 渲染每一组卡牌位置
+          if (groupedPokers.hasOwnProperty(value)) {
+            for (const poker of groupedPokers[value]) {
+              const sprite = await Assets.load(poker.alias);
+              const spritePicture = new Sprite(sprite);
+              spritePicture.position.set(currentX1, currentY1);
+              spritePicture.scale.set(0.6, 0.6);
+              // spritePicture.anchor.set(0, 0);
+
+              areaOne.addChild(spritePicture);
+
+              // 更新坐标以准备绘制下一张牌
+              currentY1 += spritePicture.width;
+            }
+            // 重置坐标以准备绘制下一组牌
+            currentX1 += cardWidth;
+            currentY1 = 0;
+          }
+        }
+
+        app.stage.addChild(containerOne);
+
+        const areaTwo = new PIXI.Graphics();
+        areaTwo.beginFill("skyblue");
+        areaTwo.drawRect(0, 0, 64, 200);
+        areaTwo.endFill();
+        containerTwo.addChild(areaTwo);
+        containerTwo.position.set(
+          0,
+          app.renderer.height / 2 - areaTwo.height / 2
+        );
+        app.stage.addChild(containerTwo);
+
+        const areaThree = new PIXI.Graphics();
+        areaThree.beginFill("skyblue");
+        areaThree.drawRect(0, 0, 200, 64);
+        areaThree.endFill();
+        containerThree.addChild(areaThree);
+        containerThree.position.set(
+          app.renderer.width / 2 - areaThree.width / 2,
+          app.renderer.height - areaThree.height
+        );
+        app.stage.addChild(containerThree);
+
+        const areaFour = new PIXI.Graphics();
+        areaFour.beginFill("skyblue");
+        areaFour.drawRect(0, 0, 64, 200);
+        areaFour.endFill();
+        containerFour.addChild(areaFour);
+        containerFour.position.set(
+          app.renderer.width - areaFour.width,
+          app.renderer.height / 2 - areaFour.height / 2
+        );
+        app.stage.addChild(containerFour);
+      };
+      init();
+    </script>
+  </body>
+</html>

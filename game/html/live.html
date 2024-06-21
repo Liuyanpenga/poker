@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .live-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        overflow: hidden;
+        position: relative;
+      }
+      @media screen and (orientation: landscape) {
+        .live-container {
+          padding-bottom: 0;
+          height: 100vh;
+        }
+      }
+      .live-content {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
+    <script src="../plugin/pixi.js"></script>
+    <script src="../js/util.js"></script>
+  </head>
+  <body>
+    <div class="live-container">
+      <div class="live-content" id="container"></div>
+    </div>
+    <script>
+      const init = async () => {
+        const { Application, Container,Graphics, Assets, Sprite } = PIXI;
+
+        // 初始化画布
+        const container = document.getElementById("container");
+        const app = new Application({
+          antialias: true, // 锯齿
+          // background: "pink",
+          resizeTo: container,
+          backgroundAlpha: 0, // 透明度
+        });
+
+        container.appendChild(app.view);
+
+        //   创建四位玩家容器
+        const containerOne = new Container();
+        const containerTwo = new Container();
+        const containerThree = new Container();
+        const containerFour = new Container();
+
+        const pokers = [
+          { alias: "方块2", number: "2", src: "../image/2-diamond.png" },
+          { alias: "黑桃2", number: "2", src: "../image/2-spade.png" },
+          { alias: "梅花3", number: "3", src: "../image/3-club.png" },
+          { alias: "黑桃3", number: "3", src: "../image/3-spade.png" },
+          { alias: "梅花5", number: "5", src: "../image/5-club.png" },
+          { alias: "梅花A", number: "1", src: "../image/A-club.png" },
+          { alias: "方块A", number: "1", src: "../image/A-diamond.png" },
+          { alias: "红桃A", number: "1", src: "../image/A-heart.png" },
+          { alias: "黑桃A", number: "1", src: "../image/A-spade.png" },
+          { alias: "大王", number: "15", src: "../image/red-joker.png" },
+          { alias: "大王", number: "15", src: "../image/red-joker.png" },
+          { alias: "方块2", number: "2", src: "../image/2-diamond.png" },
+          { alias: "黑桃2", number: "2", src: "../image/2-spade.png" },
+          { alias: "梅花3", number: "3", src: "../image/3-club.png" },
+          { alias: "黑桃3", number: "3", src: "../image/3-spade.png" },
+        ];
+
+        // 排序(大牌在左小牌在右)
+        pokers.sort((a, b) => b.number - a.number);
+
+        // 预加载资源
+        pokers.forEach((item) => {
+          Assets.add({ alias: item.alias, src: item.src });
+        });
+
+        // 将数值相同的牌分组
+        const groupedPokers = {};
+        for (const poker of pokers) {
+          if (!groupedPokers[poker.number]) {
+            groupedPokers[poker.number] = [];
+          }
+          groupedPokers[poker.number].push(poker);
+        }
+
+        // 设置牌的大小和间距
+        const cardWidth = 19.2;
+        const cardHeight = 21.8;
+        const cardSpacing = 0;
+        // 玩家一
+        let currentX1 = 0;
+        let currentY1 = 10;
+        for (const value in groupedPokers) {
+          // 排序(红桃丶黑桃丶梅花丶方块)
+          sortSuit(groupedPokers[value]);
+
+          // 渲染每一组卡牌位置
+          if (groupedPokers.hasOwnProperty(value)) {
+            currentX1 -= cardWidth + 14;
+
+            for (const poker of groupedPokers[value]) {
+              const sprite = await Assets.load(poker.alias);
+              const spritePicture = new Sprite(sprite);
+              spritePicture.position.set(currentX1, currentY1);
+              spritePicture.scale.set(0.8,0.8)
+              // spritePicture.anchor.set(0, 0);
+
+              containerOne.addChild(spritePicture);
+
+              // 更新y坐标以准备绘制下一张牌
+              currentY1 += cardHeight + 6;
+            }
+            // 重置y坐标以准备绘制下一组牌
+            currentY1 = 10;
+          }
+        }
+        containerOne.position.set(app.renderer.width / 2 + 19.2 * 5, 0);
+        // containerOne.rotation = (Math.PI / 180) * 270;
+
+        // 玩家二
+        let currentX2 = 0;
+        let currentY2 = 0;
+        for (const value in groupedPokers) {
+          // 排序(红桃丶黑桃丶梅花丶方块)
+          sortSuit(groupedPokers[value]);
+
+          // 渲染每一组卡牌位置
+          if (groupedPokers.hasOwnProperty(value)) {
+            currentX2 -= cardWidth + 14;
+
+            for (const poker of groupedPokers[value]) {
+              const sprite = await Assets.load(poker.alias);
+              const spritePicture = new Sprite(sprite);
+              spritePicture.position.set(currentX2, currentY2);
+
+              containerTwo.addChild(spritePicture);
+              containerTwo.rotation = Math.PI / 2;
+              // 更新y坐标以准备绘制下一张牌
+              currentY2 -= cardHeight + 6;
+            }
+            // 重置y坐标以准备绘制下一组牌
+            currentY2 = 0;
+          }
+        }
+        const lengths2 = Object.values(groupedPokers).map((arr) => arr.length);
+        const maxLength2 = Math.max.apply(null, lengths2);
+        containerTwo.position.set(200, 200);
+
+        // 玩家三
+        let currentX3 = 0;
+        let currentY3 = 0;
+        for (const value in groupedPokers) {
+          // 排序(红桃丶黑桃丶梅花丶方块)
+          sortSuit(groupedPokers[value]);
+
+          // 渲染每一组卡牌位置
+          if (groupedPokers.hasOwnProperty(value)) {
+            currentX3 -= cardWidth + 14;
+
+            for (const poker of groupedPokers[value]) {
+              const sprite = await Assets.load(poker.alias);
+              const spritePicture = new Sprite(sprite);
+              spritePicture.position.set(currentX3, currentY3);
+
+              containerThree.addChild(spritePicture);
+
+              // 更新y坐标以准备绘制下一张牌
+              currentY3 -= cardHeight + 6;
+            }
+            // 重置y坐标以准备绘制下一组牌
+            currentY3 = 0;
+          }
+        }
+        const lengths = Object.values(groupedPokers).map((arr) => arr.length);
+        const maxLength = Math.max.apply(null, lengths);
+        containerThree.position.set(
+          app.renderer.width / 2 + 19.2 * 5,
+          app.renderer.height - (21.8 * maxLength) / 2
+        );
+
+        // 玩家四
+        let currentX4 = 0;
+        let currentY4 = 0;
+        for (const value in groupedPokers) {
+          // 排序(红桃丶黑桃丶梅花丶方块)
+          sortSuit(groupedPokers[value]);
+
+          // 渲染每一组卡牌位置
+          if (groupedPokers.hasOwnProperty(value)) {
+            currentX4 -= cardWidth + 14;
+
+            for (const poker of groupedPokers[value]) {
+              const sprite = await Assets.load(poker.alias);
+              const spritePicture = new Sprite(sprite);
+              spritePicture.position.set(currentX4, currentY4);
+
+              containerFour.addChild(spritePicture);
+              containerFour.rotation = (Math.PI / 180) * 270;
+              // 更新y坐标以准备绘制下一张牌
+              currentY4 -= cardHeight + 6;
+            }
+            // 重置y坐标以准备绘制下一组牌
+            currentY4 = 0;
+          }
+        }
+        const lengths4 = Object.values(groupedPokers).map((arr) => arr.length);
+        const maxLength4 = Math.max.apply(null, lengths);
+        containerFour.position.set(
+          app.renderer.width - (21.8 * maxLength4) / 2,
+          app.renderer.height / 2 - 19.2 * 5
+        );
+
+        app.stage.addChild(containerOne);
+        app.stage.addChild(containerTwo);
+        app.stage.addChild(containerThree);
+        app.stage.addChild(containerFour);
+      };
+
+      init();
+    </script>
+  </body>
+</html>
