@@ -2,7 +2,7 @@ const { Assets, Sprite } = PIXI
 const sortSuit = (flag, arr) => {
     // 定义一个排序顺序的映射  
     let orderMap;
-    if (flag) {
+    if (flag == 'player1' || flag == 'player2') {
         orderMap = {
             '红桃': 1,
             '黑桃': 2,
@@ -34,15 +34,19 @@ const sortSuit = (flag, arr) => {
 
 const createSprite = async (player, currentX, currentY, box, groupedPokers) => {
     let spritePicture
-    for (const value in groupedPokers) {
-        // 排序(红桃丶黑桃丶梅花丶方块)
-        sortSuit(true, groupedPokers[value]);
 
+    for (const value in groupedPokers) {
+        
         // 渲染每一组卡牌位置
         if (groupedPokers.hasOwnProperty(value)) {
+
+            // 排序(红桃丶黑桃丶梅花丶方块)
+            sortSuit(player, groupedPokers[value]);
+            
             for (const poker of groupedPokers[value]) {
                 const sprite = await Assets.load(poker.alias);
                 spritePicture = new Sprite(sprite);
+                spritePicture.name = poker.alias
                 spritePicture.position.set(currentX, currentY);
                 spritePicture.scale.set(0.6, 0.6);
 
@@ -85,6 +89,27 @@ const loadBackground = async (item) => {
     spriteBack.scale.set(0.6, 0.6);
     return spriteBack;
 };
+
+
+// 注:为使用pixi.js的渲染方式,扑克值的大小反过来使用
+const pokers = [
+    { alias: "方块2", number: "14", src: "../image/2-diamond.png" },
+    { alias: "黑桃2", number: "14", src: "../image/2-spade.png" },
+    { alias: "梅花3", number: "13", src: "../image/3-club.png" },
+    { alias: "黑桃3", number: "13", src: "../image/3-spade.png" },
+    { alias: "梅花5", number: "11", src: "../image/5-club.png" },
+    { alias: "梅花A", number: "15", src: "../image/A-club.png" },
+    { alias: "方块A", number: "15", src: "../image/A-diamond.png" },
+    { alias: "红桃A", number: "15", src: "../image/A-heart.png" },
+    { alias: "黑桃A", number: "15", src: "../image/A-spade.png" },
+    { alias: "大王", number: "1", src: "../image/red-joker.png" },
+    { alias: "大王", number: "1", src: "../image/red-joker.png" },
+    { alias: "方块2", number: "14", src: "../image/2-diamond.png" },
+    { alias: "黑桃2", number: "14", src: "../image/2-spade.png" },
+    { alias: "梅花3", number: "13", src: "../image/3-club.png" },
+    { alias: "黑桃3", number: "13", src: "../image/3-spade.png" },
+  ];
+  
 
 
 // 备份未封装渲染玩家卡牌

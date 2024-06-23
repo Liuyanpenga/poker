@@ -29,46 +29,32 @@
         box-sizing: border-box;
       }
     </style>
-    <script src="../plugin/pixi.js"></script>
+    <!-- <script src="../plugin/pixi.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/pixi.js/8.1.5/pixi.min.js"></script>
     <script src="../js/util.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tween.js"></script>
+    <script src="https://unpkg.com/@pixi/sound@6.0.0/dist/pixi-sound.js"></script>
   </head>
   <body>
-    <!-- <button id="test">测试</button> -->
+    <button id="test">测试</button>
     <div class="live-container">
       <div class="live-content" id="container"></div>
     </div>
     <script>
-      const init = async () => {
+      let app, box1, box2, box3, box4;
+      const init = async (pokers) => {
         const { Application, Container, Graphics, Assets, Sprite } = PIXI;
 
         // 初始化画布
         const container = document.getElementById("container");
-        const app = new Application({
+        app = new PIXI.Application();
+        await app.init({
           antialias: true, // 锯齿
           // background: "pink",
           resizeTo: container,
-          backgroundAlpha: 0, // 透明度
+          // backgroundAlpha: 0, // 透明度
         });
-
-        container.appendChild(app.view);
-        // 注:为使用pixi.js的渲染方式,扑克值的大小反过来使用
-        const pokers = [
-          { alias: "方块2", number: "2", src: "../image/2-diamond.png" },
-          { alias: "黑桃2", number: "2", src: "../image/2-spade.png" },
-          { alias: "梅花3", number: "3", src: "../image/3-club.png" },
-          { alias: "黑桃3", number: "3", src: "../image/3-spade.png" },
-          { alias: "梅花5", number: "5", src: "../image/5-club.png" },
-          { alias: "梅花A", number: "15", src: "../image/A-club.png" },
-          { alias: "方块A", number: "15", src: "../image/A-diamond.png" },
-          { alias: "红桃A", number: "15", src: "../image/A-heart.png" },
-          { alias: "黑桃A", number: "15", src: "../image/A-spade.png" },
-          { alias: "大王", number: "1", src: "../image/red-joker.png" },
-          { alias: "大王", number: "1", src: "../image/red-joker.png" },
-          { alias: "方块2", number: "2", src: "../image/2-diamond.png" },
-          { alias: "黑桃2", number: "2", src: "../image/2-spade.png" },
-          { alias: "梅花3", number: "3", src: "../image/3-club.png" },
-          { alias: "黑桃3", number: "3", src: "../image/3-spade.png" },
-        ];
+        container.appendChild(app.canvas);
         // 两种玩家信息背景
         const groupBack = [
           { alias: "red-team", src: "../image/group2.png" },
@@ -86,7 +72,7 @@
 
         // 预加载资源
         pokers.forEach((item, index) => {
-          // item.number = index + 1
+          // item.number = index + 1;
           Assets.add({ alias: item.alias, src: item.src });
         });
 
@@ -102,34 +88,40 @@
         // 玩家一
         let currentX1 = 0;
         let currentY1 = 0;
-        let box1 = new Graphics();
+        box1 = new Graphics();
         box1.drawRect(0, 0, 0, 0);
 
         // 渲染玩家一扑克牌
         createSprite("player1", currentX1, currentY1, box1, groupedPokers);
 
         // 渲染玩家信息
-        const back1 = await loadBackground(groupBack[0]);
-        back1.position.set(-back1.width - 10, 0);
-        containerOne.addChild(back1);
-
+        const loadInfo1 = async () => {
+          const back1 = await loadBackground(groupBack[0]);
+          back1.position.set(-back1.width - 10, 0);
+          back1.name = "playerInfo";
+          box1.addChild(back1);
+        };
+        loadInfo1();
         containerOne.addChild(box1);
         containerOne.position.set(app.renderer.width / 2 - box1.width, 10);
 
         // 玩家二
         let currentX2 = 0;
         let currentY2 = 0;
-        let box2 = new Graphics();
+        box2 = new Graphics();
         box2.drawRect(0, 0, 0, 0);
 
         // 渲染玩家二扑克牌
         createSprite("player2", currentX2, currentY2, box2, groupedPokers);
 
         // 渲染玩家信息
-        const back2 = await loadBackground(groupBack[1]);
-        back2.position.set(0, -back2.height - 10);
-        containerTwo.addChild(back2);
-
+        const loadInfo2 = async () => {
+          const back2 = await loadBackground(groupBack[1]);
+          back2.position.set(0, -back2.height - 10);
+          back2.name = "playerInfo";
+          box2.addChild(back2);
+        };
+        loadInfo2();
         containerTwo.addChild(box2);
         containerTwo.position.set(
           10,
@@ -139,37 +131,44 @@
         // 玩家三
         let currentX3 = 0;
         let currentY3 = 0;
-        let box3 = new Graphics();
+        box3 = new Graphics();
         box3.drawRect(0, 0, 0, 0);
 
         // 渲染玩家三扑克牌
         createSprite("player3", currentX3, currentY3, box3, groupedPokers);
 
         // 渲染玩家信息
-        const back3 = await loadBackground(groupBack[0]);
-        back3.position.set(-back3.width - 10, -back3.height + 20);
-        containerThree.addChild(back3);
-
+        const loadInfo3 = async () => {
+          const back3 = await loadBackground(groupBack[0]);
+          back3.position.set(-back3.width - 10, -back3.height + 20);
+          back3.name = "playerInfo";
+          box3.addChild(back3);
+        };
+        loadInfo3();
         containerThree.addChild(box3);
+        console.log(containerThree);
         containerThree.position.set(
-          app.renderer.width / 2 - box3.width / 2,
-          app.renderer.height - box3.height / 2 - 20
+          app.renderer.width / 2 - containerThree.width / 2,
+          app.renderer.height - containerThree.height / 2
         );
 
         // 玩家四
         let currentX4 = 0;
         let currentY4 = 0;
-        let box4 = new Graphics();
+        box4 = new Graphics();
         box4.drawRect(0, 0, 0, 0);
 
         // 渲染玩家四扑克牌
-        createSprite("play4", currentX4, currentY4, box4, groupedPokers);
+        createSprite("player4", currentX4, currentY4, box4, groupedPokers);
 
         // 渲染玩家信息
-        const back4 = await loadBackground(groupBack[1]);
-        back4.position.set(-back4.width - 10, -back4.height - 10);
-        containerFour.addChild(back4);
-
+        const loadInfo4 = async () => {
+          const back4 = await loadBackground(groupBack[1]);
+          back4.position.set(-back4.width - 10, -back4.height - 10);
+          back4.name = "playerInfo";
+          box4.addChild(back4);
+        };
+        loadInfo4();
         containerFour.addChild(box4);
         containerFour.position.set(
           app.renderer.width - box4.width - 10,
@@ -182,7 +181,52 @@
         app.stage.addChild(containerFour);
       };
 
-      init();
+      init(pokers);
+      // 删除某个扑克
+      function removeSpriteFromGraphics(spriteToRemove, graphics) {
+        graphics.removeChild(spriteToRemove);
+      }
+
+      // 执行动画
+      function startAnimate(sprite) {
+        // 使用 Tween.js 创建透明度渐变动画
+        const tween = new TWEEN.Tween(sprite)
+          .to({ alpha: 0.4 }, 1000) // 在1000ms（1秒）内将透明度渐变为0.4
+          .onComplete(() => {
+            // 动画完成后移除精灵
+            removeSpriteFromGraphics(sprite, box1);
+          })
+          .start();
+      }
+      // 初始化动画
+      function animate() {
+        requestAnimationFrame(animate);
+        TWEEN.update();
+
+        // todo 重新渲染画面不生效
+        app.render();
+      }
+
+      // 播放声音 执行动画
+      const btn = document.getElementById("test");
+      btn.addEventListener("click", () => {
+        PIXI.sound.add("my-sound", "../audio/message.mp3");
+        PIXI.sound.play("my-sound");
+
+        // 获取玩家出的手牌并移除
+        const foundSprite = box1.getChildByName("梅花A");
+        startAnimate(foundSprite);
+        animate();
+
+        setTimeout(() => {
+          pokers.forEach((item, index) => {
+            if (item.alias === "梅花A") {
+              pokers.splice(index, 1);
+            }
+          });
+          init(pokers);
+        }, 2000);
+      });
     </script>
   </body>
 </html>

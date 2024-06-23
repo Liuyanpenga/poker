@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixiJS Card Game Example</title>
+    <style>
+      body {
+        margin: 0;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      canvas {
+        border: 1px solid #333;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdn.bootcdn.net/ajax/libs/pixi.js/6.2.0/browser/pixi.js"></script>
+
+    <script>
+      // 创建PixiJS应用
+      const app = new PIXI.Application({ width: 800, height: 600 });
+      document.body.appendChild(app.view);
+
+      // 加载卡牌图片资源
+      const loader = new PIXI.Loader();
+      const cardsImg = [
+        {
+          name: "heartsA",
+          src: "images/hearts-A.png",
+        },
+        {
+          name: "spades3",
+          src: "images/spades-3.png",
+        },
+        {
+          name: "clubs5",
+          src: "images/clubs-5.png",
+        },
+        {
+          name: "diamonds2",
+          src: "images/diamonds-2.png",
+        },
+      ];
+      for (let i = 0; i < cardsImg.length; i++) {
+        console.log(cardsImg[i]);
+        loader.add(cardsImg[i].name, cardsImg[i].src);
+      }
+
+      // 等待资源加载完毕后执行初始化
+      loader.load((loader, resources) => {
+        const cardFrontsTextures = {};
+        cardsImg.forEach((card) => {
+          cardFrontsTextures[card.name] = resources[card.name].texture;
+        });
+        // 创建玩家类
+        class Player {
+          constructor(name, position) {
+            this.name = name;
+            this.hand = [];
+            this.position = position;
+            this.cardsContainer = new PIXI.Container();
+            this.cardsContainer.x = app.renderer.width / 2;
+            this.cardsContainer.y = app.renderer.height / 2;
+
+            // 根据位置调整手牌容器的位置
+            switch (position) {
+              case "top":
+                this.cardsContainer.y -= 150;
+                break;
+              case "bottom":
+                this.cardsContainer.y += 150;
+                break;
+              case "left":
+                this.cardsContainer.x -= 150;
+                break;
+              case "right":
+                this.cardsContainer.x += 150;
+                break;
+            }
+
+            app.stage.addChild(this.cardsContainer);
+          }
+
+          // 添加卡牌到手牌
+          addCard(card) {
+            this.hand.push(card);
+
+            // 根据新添加的牌重新排列手牌
+            this.arrangeCards();
+          }
+
+          // 出牌（这里示意性地从手牌中移除第一张牌）
+          playCard() {
+            if (this.hand.length > 0) {
+              console.log("0000000000000000000000");
+              const cardToRemove = this.hand.shift(); // 移除第一张牌
+              const index = this.cardsContainer.children.findIndex(
+                (card) => card.texture === cardToRemove.texture
+              );
+              if (index !== -1) {
+                const cardToRemove = this.cardsContainer.getChildAt(index);
+                // 实现移除动画（示意性地用卡牌放大然后淡出）
+                const tween = new PIXI.Tween(cardToRemove.scale)
+                  .to({ x: 1.5, y: 1.5 }, 200)
+                  .onComplete(() => {
+                    this.cardsContainer.removeChild(cardToRemove);
+                  })
+                  .start();
+              }
+            }
+          }
+
+          // 根据规则排列手牌
+          arrangeCards() {
+            // 先清空原有的手牌显示
+            this.cardsContainer.removeChildren();
+
+            // 按数值相同时竖向排列，不同时横向排列
+            const sortedHand = this.hand.sort((a, b) => a.value - b.value);
+
+            let horizontalOffset = 0;
+            let verticalOffset = 0;
+
+            sortedHand.forEach((card) => {
+              const cardSprite = new PIXI.Sprite(
+                cardFrontsTextures[card.textureName]
+              );
+              cardSprite.anchor.set(0.5);
+
+              if (this.position === "top" || this.position === "bottom") {
+                cardSprite.y = verticalOffset;
+                verticalOffset += 30; // 垂直偏移量
+              } else {
+                cardSprite.x = horizontalOffset;
+                horizontalOffset += 40; // 水平偏移量
+              }
+
+              this.cardsContainer.addChild(cardSprite);
+            });
+          }
+        }
+
+        // 创建四个玩家对象
+        const playerTop = new Player("Player 1", "top");
+        const playerBottom = new Player("Player 2", "bottom");
+        const playerLeft = new Player("Player 3", "left");
+        const playerRight = new Player("Player 4", "right");
+
+        // 模拟给玩家发牌
+        const players = [playerTop, playerBottom, playerLeft, playerRight];
+        const suits = ["hearts", "spades", "clubs", "diamonds"];
+        const values = [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A",
+        ];
+
+        // 示例：发牌给玩家
+        for (let i = 0; i < players.length; i++) {
+          console.log("---------------------");
+          for (let valueIndex = 0; valueIndex < values.length; valueIndex++) {
+            for (let suitIndex = 0; suitIndex < suits.length; suitIndex++) {
+              const card = {
+                value: valueIndex,
+                suit: suitIndex,
+                textureName: `${values[valueIndex]}_${suits[suitIndex]}.png`, // 根据实际的卡牌图片名称
+              };
+              players[i].addCard(card);
+            }
+          }
+        }
+
+        // 示例：玩家出牌（模拟）
+        setTimeout(() => {
+          playerTop.playCard(); // 玩家出牌的示例
+        }, 3000); // 延迟3秒后示意性地玩家出牌
+      });
+    </script>
+  </body>
+</html>

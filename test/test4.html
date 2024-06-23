@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixiJS 示例：玩家手牌布局与动画效果</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.3/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tween.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // 创建Pixi应用
+      const app = new PIXI.Application({ width: 800, height: 600 });
+      document.body.appendChild(app.view);
+
+      // 定义纸牌的数值和花色
+      const suits = ["hearts", "spades", "clubs", "diamonds"];
+      const values = [
+        "A",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "J",
+        "Q",
+        "K",
+      ];
+
+      // 初始化玩家手牌数据
+      const players = [
+        {
+          name: "Player1",
+          cards: ["hearts-A", "spades-3", "clubs-5", "diamonds-2"],
+        },
+        {
+          name: "Player2",
+          cards: ["hearts-A", "spades-3", "clubs-5", "diamonds-2"],
+        },
+        {
+          name: "Player3",
+          cards: ["hearts-A", "spades-3", "clubs-5", "diamonds-2"],
+        },
+        {
+          name: "Player4",
+          cards: ["hearts-A", "spades-3", "clubs-5", "diamonds-2"],
+        },
+      ];
+
+      // 加载纸牌图片资源
+      PIXI.Loader.shared.add("cards", "/images/cards.png").load(setup);
+    //   PIXI.Loader.shared.add('cards', 'assets/cards.png').load(setup);
+
+      function setup() {
+        // 创建容器来放置玩家手牌
+        const container = new PIXI.Container();
+        app.stage.addChild(container);
+
+        // 玩家手牌的初始位置
+        const positions = [
+          { x: app.renderer.width / 2, y: 20 }, // 上
+          { x: app.renderer.width - 20, y: app.renderer.height / 2 }, // 右
+          { x: app.renderer.width / 2, y: app.renderer.height - 20 }, // 下
+          { x: 20, y: app.renderer.height / 2 }, // 左
+        ];
+
+        // 遍历每位玩家
+        players.forEach((player, index) => {
+          const cards = player.cards;
+
+          // 根据玩家位置创建牌的容器
+          const playerContainer = new PIXI.Container();
+
+          // 调试输出，确保 positions[index] 存在且包含 x 和 y 属性
+          if (positions[index]) {
+            playerContainer.position.set(
+              positions[index].x,
+              positions[index].y
+            );
+          } else {
+            console.error(
+              `Position for index ${index} is undefined or missing.`
+            );
+          }
+
+          container.addChild(playerContainer);
+
+          // 根据牌的数据创建纸牌精灵并添加到容器中
+          cards.forEach((cardId, i) => {
+            const [suit, value] = cardId.split("-");
+
+            // 调试输出，确保 value 和 suit 变量的值正确
+            console.log(`Creating card ${value}-${suit}`);
+
+            const texture = PIXI.Texture.from(`cards`);
+
+            // 检查 values 和 suits 数组确保包含有效的值
+            const valueIndex = values.indexOf(value);
+            const suitIndex = suits.indexOf(suit);
+
+            if (valueIndex !== -1 && suitIndex !== -1) {
+              //   const card = new PIXI.Sprite(
+              //     new PIXI.Rectangle(valueIndex * 73, suitIndex * 98, 73, 98)
+              //   );
+              //   card.scale.set(0.5);
+              //   card.y = i * 20;
+              const card = new PIXI.Sprite(texture);
+              card.x = valueIndex * 73; // 设置精灵的 x 坐标
+              card.y = suitIndex * 98; // 设置精灵的 y 坐标
+              card.width = 73; // 设置精灵的宽度
+              card.height = 98; // 设置精灵的高度
+                 card.scale.set(0.5);
+                card.y = i * 20;
+              playerContainer.addChild(card);
+            } else {
+              console.error(
+                `Value or suit not found in arrays: ${value}, ${suit}`
+              );
+            }
+          });
+        });
+
+        // 点击事件监听
+        app.renderer.plugins.interaction.on("pointerdown", onPointerDown);
+
+        function onPointerDown(event) {
+          // 模拟玩家出牌后的效果：点击牌后移除
+          const card = event.target;
+          if (card instanceof PIXI.Sprite) {
+            const animation = new TWEEN.Tween({ alpha: 1 })
+              .to({ alpha: 0 }, 500)
+              .onUpdate(function () {
+                card.alpha = this.alpha;
+              })
+              .onComplete(() => {
+                card.parent.removeChild(card);
+              })
+              .start();
+          }
+        }
+
+        // PixiJS 更新循环
+        app.ticker.add(() => {
+          TWEEN.update();
+        });
+      }
+    </script>
+  </body>
+</html>

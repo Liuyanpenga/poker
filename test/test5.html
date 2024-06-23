@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixiJS 扑克牌示例</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/pixi.js/6.2.0/browser/pixi.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tween.js"></script>
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/pixi.js"></script> -->
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #f0f0f0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <script src="main.js"></script> -->
+    <script>
+      // 初始化Pixi应用
+      const app = new PIXI.Application({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundColor: 0xf0f0f0,
+        antialias: true,
+      });
+      document.body.appendChild(app.view);
+
+      const cardsImg = [
+        {
+          name: "heartsA",
+          src: "images/hearts-A.png",
+        },
+        {
+          name: "spades3",
+          src: "images/spades-3.png",
+        },
+        {
+          name: "clubs5",
+          src: "images/clubs-5.png",
+        },
+        {
+          name: "diamonds2",
+          src: "images/diamonds-2.png",
+        },
+      ];
+
+      // 加载扑克牌图片资源
+      const loader = new PIXI.Loader();
+
+      for (let i = 0; i < cardsImg.length; i++) {
+        console.log(cardsImg[i]);
+        PIXI.Loader.shared.add(cardsImg[i].name, cardsImg[i].src);
+      }
+
+      // loader.add("cards", "path/to/your/cards.png");
+      // loader.load(setup);
+
+      // 全局变量
+      let cards = [];
+      const cardWidth = 19.2;
+      const cardHeight = 21.8;
+
+      // 准备牌堆数据
+      const players = [
+        { name: "Player1", hand: ["H2", "S4", "C6", "D8"] }, // 假设每位玩家手牌
+        { name: "Player2", hand: ["H3", "S5", "C7", "D9"] },
+        { name: "Player3", hand: ["H4", "S6", "C8", "D10"] },
+        { name: "Player4", hand: ["H5", "S7", "C9", "D11"] },
+      ];
+      const cardTextures = [];
+      PIXI.Loader.shared.load((loader, resources) => {
+        const cardWidth = 19.2;
+        const cardHeight = 21.8;
+        console.log(loader, resources);
+        cardsImg.forEach((card) => {
+          const name = card.name;
+          const cardTexture = resources[name].texture;
+          console.log(cardTexture, "===============");
+          // const sprite = new PIXI.Sprite(texture);
+
+          for (let i = 0; i < 13; i++) {
+            for (let j = 0; j < 4; j++) {
+              // 计算裁剪区域
+              const x = j * cardWidth;
+              const y = i * cardHeight;
+
+              if (
+                x + cardWidth <= cardTexture.width &&
+                y + cardHeight <= cardTexture.height
+              ) {
+                const texture = new PIXI.Texture(
+                  cardTexture.baseTexture,
+                  new PIXI.Rectangle(x, y, cardWidth, cardHeight)
+                );
+                const cardSprite = new PIXI.Sprite(texture);
+
+                // 设置卡牌位置
+                cardSprite.x = j * cardWidth;
+                cardSprite.y = i * cardHeight;
+
+                // 将卡牌精灵添加到舞台
+                app.stage.addChild(cardSprite);
+                cards.push(cardSprite);
+              } else {
+                console.warn(
+                  `裁剪区域超出纹理尺寸：x=${x}, y=${y}, width=${cardWidth}, height=${cardHeight}`
+                );
+              }
+
+              // const frame = new PIXI.Rectangle(
+              //   i * cardWidth,
+              //   j * cardHeight,
+              //   cardWidth,
+              //   cardHeight
+              // );
+              // cardTextures.push(new PIXI.Texture(texture, frame));
+            }
+          }
+        });
+      });
+
+      // 创建和排列玩家手牌
+      for (let i = 0; i < players.length; i++) {
+        const player = players[i];
+        const hand = player.hand;
+        const handSprites = [];
+
+        for (let j = 0; j < hand.length; j++) {
+          const card = hand[j];
+          const cardSprite = new PIXI.Sprite(cardTextures[cardIndex(card)]);
+          cardSprite.position.set(getXPosition(i, j), getYPosition(i, j));
+          app.stage.addChild(cardSprite);
+          handSprites.push(cardSprite);
+        }
+
+        cards.push(handSprites);
+      }
+
+      // 模拟玩家出牌
+      setTimeout(() => {
+        const cardToRemove = cards[0][0]; // 例如移除第一个玩家的第一张牌
+        animateCardRemoval(cardToRemove);
+      }, 2000);
+      // }
+
+      // 辅助函数
+      function cardIndex(card) {
+        const suits = ["H", "S", "C", "D"];
+        const values = [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A",
+        ];
+        const suitIndex = suits.indexOf(card[0]);
+        const valueIndex = values.indexOf(card.substring(1));
+        return suitIndex * 13 + valueIndex;
+      }
+
+      function getXPosition(playerIndex, cardIndex) {
+        if (playerIndex === 0 || playerIndex === 2) {
+          // 竖向排列
+          return playerIndex * (app.renderer.width / 3) + 50;
+        } else {
+          // 横向排列
+          return (
+            playerIndex * (app.renderer.width / 3) +
+            cardIndex * (cardWidth + 10) +
+            50
+          );
+        }
+      }
+
+      function getYPosition(playerIndex, cardIndex) {
+        if (playerIndex === 0) {
+          // 竖向排列
+          return cardIndex * (cardHeight + 10) + 50;
+        } else if (playerIndex === 1) {
+          // 横向排列
+          return app.renderer.height - cardHeight - 50;
+        } else if (playerIndex === 2) {
+          // 竖向排列
+          return (
+            app.renderer.height -
+            cardIndex * (cardHeight + 10) -
+            cardHeight -
+            50
+          );
+        } else {
+          // 横向排列
+          return 50;
+        }
+      }
+
+      function animateCardRemoval(cardSprite) {
+        // 实现牌被移除的动画效果，这里只是一个简单示例，可以根据实际需求进行修改
+        const animation = new TWEEN.Tween(cardSprite.scale)
+          .to({ x: 0, y: 0 }, 500)
+          .onComplete(() => {
+            app.stage.removeChild(cardSprite);
+          })
+          .start();
+      }
+
+      // PixiJS Ticker
+      app.ticker.add(() => {
+        TWEEN.update();
+      });
+    </script>
+  </body>
+</html>

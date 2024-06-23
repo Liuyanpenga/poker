@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixiJS Card Game Example</title>
+    <script src="/pixijs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tween.js"></script>
+  </head>
+  <body>
+    <script>
+      // Initialize PixiJS
+      const app = new PIXI.Application({ width: 800, height: 600 });
+      document.body.appendChild(app.view);
+
+      // Constants
+      const cardWidth = 80;
+      const cardHeight = 120;
+      const padding = 10;
+      const suits = ["hearts", "spades", "clubs", "diamonds"];
+      const ranks = [
+        "A",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "J",
+        "Q",
+        "K",
+      ];
+
+      // Function to create a card sprite
+      function createCardSprite(suit, rank) {
+        const texture = PIXI.Texture.from(`/images/${suit}-${rank}.png`);
+        const card = new PIXI.Sprite(texture);
+        card.anchor.set(0.5);
+        card.width = cardWidth;
+        card.height = cardHeight;
+        return card;
+      }
+
+      // Function to layout cards for a player
+      function layoutCards(playerIndex, cards) {
+        const startX = app.renderer.width / 2;
+        const startY = app.renderer.height / 2;
+        let x, y;
+
+        switch (playerIndex) {
+          case 0: // Top player
+            x = startX - (cards.length - 1) * (cardWidth / 2 + padding);
+            y = padding;
+            for (let i = 0; i < cards.length; i++) {
+              cards[i].x = x + i * (cardWidth + padding);
+              cards[i].y = y;
+              app.stage.addChild(cards[i]);
+            }
+            break;
+          case 1: // Right player
+            x = app.renderer.width - padding - cardHeight / 2;
+            y = startY - (cards.length - 1) * (cardWidth / 2 + padding);
+            for (let i = 0; i < cards.length; i++) {
+              cards[i].x = x;
+              cards[i].y = y + i * (cardWidth + padding);
+              cards[i].rotation = Math.PI / 2; // Rotate 90 degrees
+              app.stage.addChild(cards[i]);
+            }
+            break;
+          case 2: // Bottom player
+            x = startX + (cards.length - 1) * (cardWidth / 2 + padding);
+            y = app.renderer.height - padding - cardHeight / 2;
+            for (let i = 0; i < cards.length; i++) {
+              cards[i].x = x - i * (cardWidth + padding);
+              cards[i].y = y;
+              app.stage.addChild(cards[i]);
+            }
+            break;
+          case 3: // Left player
+            x = padding + cardHeight / 2;
+            y = startY + (cards.length - 1) * (cardWidth / 2 + padding);
+            for (let i = 0; i < cards.length; i++) {
+              cards[i].x = x;
+              cards[i].y = y - i * (cardWidth + padding);
+              cards[i].rotation = -Math.PI / 2; // Rotate -90 degrees
+              app.stage.addChild(cards[i]);
+            }
+            break;
+        }
+      }
+
+      // Example: Generate some random cards for each player
+      const players = 4;
+      const playerCards = [];
+
+      for (let i = 0; i < players; i++) {
+        const cards = [];
+        for (let j = 0; j < 5; j++) {
+          const suit = suits[Math.floor(Math.random() * suits.length)];
+          const rank = ranks[Math.floor(Math.random() * ranks.length)];
+          const card = createCardSprite(suit, rank);
+          console.log(card,'xxxxxxxxxxxxxxxxxxxxx')
+          cards.push(card);
+        }
+        playerCards.push(cards);
+        console.log(playerCards,'1111111111111111111')
+      }
+
+      // Layout the initial cards
+      for (let i = 0; i < players; i++) {
+        layoutCards(i, playerCards[i]);
+      }
+
+      // Function to animate card removal (example)
+      function removeCard(playerIndex, cardIndex) {
+        const card = playerCards[playerIndex][cardIndex];
+        const targetX = app.renderer.width / 2;
+        const targetY = app.renderer.height / 2;
+        const animationTime = 500; // milliseconds
+
+        const removeTween = new TWEEN.Tween(card)
+          .to({ x: targetX, y: targetY, alpha: 0 }, animationTime)
+          .easing(TWEEN.Easing.Linear.None)
+          .onComplete(() => {
+            app.stage.removeChild(card);
+          })
+          .start();
+      }
+
+      // Example: Trigger card removal after 2 seconds
+      setTimeout(() => {
+        removeCard(0, 0); // Remove first card from top player
+      }, 2000);
+
+      // PixiJS update loop
+      app.ticker.add(() => {
+        TWEEN.update();
+      });
+    </script>
+  </body>
+</html>

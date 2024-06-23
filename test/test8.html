@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://cdn.bootcdn.net/ajax/libs/pixi.js/6.2.0/browser/pixi.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tween.js"></script>
+    <script>
+      const app = new PIXI.Application();
+      document.body.appendChild(app.view);
+
+      // 创建 Container
+      const container = new PIXI.Container();
+      app.stage.addChild(container);
+
+      // 创建 Graphics 对象
+      const graphics = new PIXI.Graphics();
+      graphics.beginFill(0xff0000); // 红色填充，示例用
+      graphics.drawRect(0, 0, 100, 100); // 绘制矩形，示例用
+      graphics.endFill();
+      container.addChild(graphics);
+
+      // 创建 sprite 并添加到 Graphics
+      const sprite = PIXI.Sprite.from("./images/clubs-3.png");
+      sprite.x = 200;
+      sprite.y = 200;
+      graphics.addChild(sprite);
+
+      // 示例删除 sprite 的方法
+      function removeSpriteFromGraphics(spriteToRemove, graphics) {
+        setTimeout(() => {
+          graphics.removeChild(spriteToRemove); // 从 Graphics 中移除 sprite
+        }, 5000);
+      }
+
+      // 调用示例删除 sprite 的方法
+      removeSpriteFromGraphics(sprite, graphics);
+
+      // 创建精灵
+      const sprite1 = PIXI.Sprite.from("./images/group1.png");
+      const sprite2 = PIXI.Sprite.from("./images/group2.png");
+      app.stage.addChild(sprite1);
+      app.stage.addChild(sprite2);
+
+      // 创建灰度滤镜
+      const grayscaleFilter = new PIXI.filters.ColorMatrixFilter();
+      grayscaleFilter.blackAndWhite();
+
+      // 应用滤镜到精灵
+      sprite1.filters = [grayscaleFilter];
+      sprite2.filters = [grayscaleFilter];
+
+      function test(x) {
+        // 使用 Tween.js 创建透明度渐变动画
+        const tween = new TWEEN.Tween(x)
+          .to({ alpha: 0.6 }, 1000) // 在1000ms（1秒）内将透明度渐变为0
+          .onComplete(() => {
+            // 动画完成后移除精灵
+            app.stage.removeChild(x);
+          })
+          .start(); // 开始动画
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        TWEEN.update();
+        // 其他动画更新或渲染代码
+        app.render();
+      }
+      test(sprite1);
+      animate();
+    </script>
+  </body>
+</html>

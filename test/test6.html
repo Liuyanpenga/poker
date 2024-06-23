@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixiJS Card Game Example</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #f0f0f0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.0.3/pixi.min.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/pixi.js/6.2.0/browser/pixi.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/tween.js"></script>
+
+    <script>
+      // PixiJS Application
+      const app = new PIXI.Application({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundColor: 0xf0f0f0,
+        // resolution: window.devicePixelRatio || 1,
+      });
+      document.body.appendChild(app.view);
+
+      // Load card textures
+      const loader = new PIXI.Loader();
+
+      const cardsImg = [
+        {
+          name: "heartsA",
+          src: "images/hearts-A.png",
+        },
+        {
+          name: "spades3",
+          src: "images/spades-3.png",
+        },
+        {
+          name: "clubs5",
+          src: "images/clubs-5.png",
+        },
+        {
+          name: "diamonds2",
+          src: "images/diamonds-2.png",
+        },
+      ];
+      for (let i = 0; i < cardsImg.length; i++) {
+        console.log(cardsImg[i]);
+        loader.add(cardsImg[i].name, cardsImg[i].src);
+      }
+      loader.load(setup);
+
+      // Constants for card positions
+      const playerPositions = [
+        { x: app.screen.width / 2, y: 20 }, // Top player
+        { x: app.screen.width / 2, y: app.screen.height - 20 }, // Bottom player
+        { x: 20, y: app.screen.height / 2 }, // Left player
+        { x: app.screen.width - 20, y: app.screen.height / 2 }, // Right player
+      ];
+
+      // Global variables
+      let cards = []; // Array to store card sprites
+
+      function setup(loader, resources) {
+        console.log(resources, "22222222222222222");
+        // Create card sprites for each player
+        for (let i = 0; i < 4; i++) {
+          const position = playerPositions[i];
+          const playerCards = createPlayerCards(i, position);
+          cards = cards.concat(playerCards);
+        }
+
+        // Add cards to stage
+        cards.forEach((card) => app.stage.addChild(card));
+
+        // Example: animate card removal (you would trigger this on card play)
+        // setTimeout(() => {
+        //   animateRemoveCard(cards[0]); // Example: Remove the first card
+        // }, 3000);
+      }
+
+      // Function to create cards for each player
+      function createPlayerCards(playerIndex, position) {
+        const cardTextures = {
+          hearts: PIXI.Texture.from("hearts"),
+          spades: PIXI.Texture.from("spades"),
+          clubs: PIXI.Texture.from("clubs"),
+          diamonds: PIXI.Texture.from("diamonds"),
+        };
+
+        const suitsOrder = ["hearts", "spades", "clubs", "diamonds"];
+        const ranksOrder = [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "J",
+          "Q",
+          "K",
+        ];
+
+        const playerCards = [];
+
+        // Create example cards
+        for (let rankIndex = 0; rankIndex < ranksOrder.length; rankIndex++) {
+          for (let suitIndex = 0; suitIndex < suitsOrder.length; suitIndex++) {
+            const texture = cardTextures[suitsOrder[suitIndex]];
+            const cardSprite = new PIXI.Sprite(texture);
+            cardSprite.anchor.set(0.5);
+            cardSprite.scale.set(0.5);
+            cardSprite.position.set(position.x, position.y);
+
+            // Arrange cards vertically by rank, horizontally by suit
+            if (playerIndex % 2 === 0) {
+              // Vertical layout
+              cardSprite.position.y += rankIndex * 20; // Adjust spacing as needed
+            } else {
+              // Horizontal layout
+              cardSprite.rotation = Math.PI / 2; // Rotate card
+              cardSprite.position.x += suitIndex * 30; // Adjust spacing as needed
+            }
+
+            // Example: attach interactive events or animations here
+
+            app.stage.addChild(cardSprite);
+            playerCards.push(cardSprite);
+          }
+        }
+
+        return playerCards;
+      }
+
+      // Example animation function to remove card
+      function animateRemoveCard(card) {
+        if (!card) return;
+        const animationTime = 500; // ms
+
+        const tween = PIXI.tweenManager.createTween(card);
+        tween.time = animationTime;
+        tween.easing = PIXI.TWEEN.Easing.Out;
+        tween.scale.set(0);
+        tween.start();
+
+        tween.once("end", () => {
+          app.stage.removeChild(card);
+        });
+      }
+    </script>
+  </body>
+</html>
